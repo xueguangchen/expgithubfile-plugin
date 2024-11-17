@@ -1,0 +1,40 @@
+plugins {
+    id("java")
+    id("org.jetbrains.intellij") version "1.17.4"
+}
+
+group = "com.supporter.prj"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    maven { url 'https://maven.aliyun.com/repository/central/'}
+    maven { url 'https://maven.aliyun.com/repository/public/' }
+    maven { url 'https://maven.aliyun.com/repository/google/' }
+    maven { url 'https://maven.aliyun.com/repository/jcenter/'}
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin'}
+}
+
+dependencies {
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r'
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    testImplementation 'ch.qos.logback:logback-classic:1.5.12'
+
+}
+
+// Configure Gradle IntelliJ Plugin
+// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
+intellij {
+    version.set("2022.2.1")
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:unchecked', '-Xlint:deprecation', '-parameters']
+}
+
+patchPluginXml {
+    //注意这个版本号不能高于上面intellij的version,否则runIde会报错
+    sinceBuild = '222'
+    untilBuild = '242.*'
+}
+
