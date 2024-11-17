@@ -1,0 +1,2 @@
+# expgithubfile-plugin
+一个idea插件，用于将git的提交记录和未提交的记录抽取到指定的文件夹
