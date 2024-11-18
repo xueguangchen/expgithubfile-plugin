@@ -14,6 +14,13 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
+    <description>
+        This plugin extracts git commit records and uncommitted changes to a specified folder.
+        It simplifies the process of updating modified files to test or production servers,
+        eliminating the need to manually copy files one by one.
+        After installation, you can find it in the File menu as "ExpGitSubmitFile".
+    </description>
+
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
