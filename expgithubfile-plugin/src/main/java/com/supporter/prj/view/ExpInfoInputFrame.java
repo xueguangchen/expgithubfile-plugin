@@ -1,9 +1,13 @@
 package com.supporter.prj.view;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author xueguangchen
@@ -68,8 +72,17 @@ public class ExpInfoInputFrame {
                     return;
                 }
 
+                Set<String> initialSelectedCommitIds = null;
+                String commitIdValues = commitIds.getText();
+                if(StringUtils.isBlank(commitIdValues)){
+                    initialSelectedCommitIds = new HashSet<>();
+                    String[] commitIdValueArr = commitIdValues.split(",");
+                    for (String commitIdValue : commitIdValueArr) {
+                        initialSelectedCommitIds.add(commitIdValue);
+                    }
+                }
                 // 弹出列表对话框
-                GitCommitHistoryListDialog dialog = new GitCommitHistoryListDialog(expInfoJpanel.getParent(), "选择提交记录", true, repoPathTemp);
+                GitCommitHistoryListDialog dialog = new GitCommitHistoryListDialog(expInfoJpanel.getParent(), "选择提交记录", true, repoPathTemp, initialSelectedCommitIds);
                 dialog.setVisible(true);
 
                 // 获取选择的项并显示在文本域中

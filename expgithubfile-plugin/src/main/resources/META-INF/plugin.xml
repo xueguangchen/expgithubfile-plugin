@@ -18,7 +18,7 @@
         This plugin extracts git commit records and uncommitted changes to a specified folder.
         It simplifies the process of updating modified files to test or production servers,
         eliminating the need to manually copy files one by one.
-        After installation, you can find it in the File menu as "ExpGitSubmitFile".
+        After installation, you can find it in the Tools menu as "ExpGitSubmitFile".
     </description>
 
     <!-- Extension points defined by the plugin.
@@ -30,7 +30,8 @@
         <action id="com.supporter.prj.action.ExpGitSubmitFileAction" class="com.supporter.prj.action.ExpGitSubmitFileAction"
                 text="ExpGitSubmitFile">
             <!--<add-to-group group-id="HelpMenu" anchor="after" relative-to-action="About"/>-->
-            <add-to-group group-id="FileMenu" anchor="last"/>
+            <!--<add-to-group group-id="FileMenu" anchor="last"/>-->
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>

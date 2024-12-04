@@ -20,10 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author xueguangchen
@@ -55,7 +52,7 @@ public class ExpGitHubUtil {
      * @param maxCount
      * @return
      */
-    public static List<GitCommitHistory> fetchGitCommitHistory(String repoPath, long maxCount) {
+    public static List<GitCommitHistory> fetchGitCommitHistory(String repoPath, long maxCount, String author, String keyword, Date startDate, Date endDate) {
         List<GitCommitHistory> gitCommitHistoryList = new ArrayList<>();
         try {
             File repoDir = new File(repoPath); // 替换为你的 Git 仓库路径
@@ -66,13 +63,24 @@ public class ExpGitHubUtil {
                 if(maxCount > 0){
                     if (count >= maxCount) break; // 限制获取的提交记录数量
                 }
-                gitCommitHistoryList.add(new GitCommitHistory(
-                        commit.getName(),
-                        commit.getAuthorIdent().getName(),
-                        commit.getAuthorIdent().getEmailAddress(),
-                        commit.getAuthorIdent().getWhen(),
-                        commit.getFullMessage()
-                ));
+                String commitAuthor = commit.getAuthorIdent().getName();
+                String commitMessage = commit.getFullMessage();
+                Date commitDate = commit.getAuthorIdent().getWhen();
+
+                // 过滤条件
+                boolean authorMatch = author == null || author.isEmpty() || commitAuthor.toLowerCase().contains(author.toLowerCase()) || commit.getAuthorIdent().getEmailAddress().contains(author.toLowerCase());
+                boolean keywordMatch = keyword == null || keyword.isEmpty() || commitMessage.toLowerCase().contains(keyword.toLowerCase());
+                boolean dateMatch = (startDate == null || !commitDate.before(startDate)) && (endDate == null || !commitDate.after(endDate));
+
+                if (authorMatch && keywordMatch && dateMatch) {
+                    gitCommitHistoryList.add(new GitCommitHistory(
+                            commit.getName(),
+                            commit.getAuthorIdent().getName(),
+                            commit.getAuthorIdent().getEmailAddress(),
+                            commit.getAuthorIdent().getWhen(),
+                            commit.getFullMessage()
+                    ));
+                }
                 count++;
             }
             git.close();
