@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -44,7 +46,11 @@ public class ExpInfoInputFrame {
 
             if (gitRepoPath != null) {
                 repoPath.setText(gitRepoPath);
-                targetFolderPath.setText(gitRepoPath + File.separator + "exp");
+                // 获取当前日期时间
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String formattedDateTime = now.format(formatter);
+                targetFolderPath.setText(gitRepoPath + File.separator + ("exp_" + formattedDateTime));
             }
         }
 
