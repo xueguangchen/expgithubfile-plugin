@@ -124,10 +124,20 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }finally {
-                            // 重新启用按钮
+                            /*// 重新启用按钮
                             exportBtn.setEnabled(true);
                             // 显示任务完成的消息对话框（可选）
-                            JOptionPane.showMessageDialog(mainPanel, "导出完成！");
+                            JOptionPane.showMessageDialog(mainPanel, "导出完成！");*/
+                            // 使用 SwingUtilities.invokeLater 确保在 EDT 中执行
+                            SwingUtilities.invokeLater(() -> {
+                                // 双重检查确保按钮状态正确
+                                if (exportBtn != null && !exportBtn.isEnabled()) {
+                                    exportBtn.setEnabled(true);
+                                }
+                                publish(100); // 发布进度信息
+                                // 显示任务完成的消息对话框（可选）
+                                JOptionPane.showMessageDialog(mainPanel, "导出完成！");
+                            });
                         }
                     }
                 };

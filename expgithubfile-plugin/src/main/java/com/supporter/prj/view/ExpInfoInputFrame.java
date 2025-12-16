@@ -44,6 +44,7 @@ public class ExpInfoInputFrame {
 
             if (gitRepoPath != null) {
                 repoPath.setText(gitRepoPath);
+                targetFolderPath.setText(gitRepoPath + File.separator + "exp");
             }
         }
 
