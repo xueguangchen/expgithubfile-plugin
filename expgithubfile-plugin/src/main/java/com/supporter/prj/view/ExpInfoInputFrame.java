@@ -1,5 +1,7 @@
 package com.supporter.prj.view;
 
+import com.intellij.openapi.project.Project;
+import com.supporter.prj.util.GitRepositoryUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -17,6 +19,8 @@ import java.util.Set;
  * @createTime 2024年11月15日 11:04:00
  */
 public class ExpInfoInputFrame {
+    private Project project;
+
     private JTextField repoPath;
     private JTextField targetFolderPath;
     private JPanel expInfoJpanel;
@@ -30,13 +34,34 @@ public class ExpInfoInputFrame {
     private JLabel commitIdsLabel;
     private JLabel commitIdsRemarkLabel;
 
-    public ExpInfoInputFrame() {
+    public ExpInfoInputFrame(Project project) {
+        this.project = project;
+        // 使用 project 获取项目路径
+        if (project != null) {
+            String projectPath = project.getBasePath();
+            // 在此基础上查找 Git 仓库
+            String gitRepoPath = GitRepositoryUtil.findGitRepositoryManually(projectPath);
+
+            if (gitRepoPath != null) {
+                repoPath.setText(gitRepoPath);
+            }
+        }
+
         selectRepoPathBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fileChooser.setAcceptAllFileFilterUsed(false);
+
+                // 获取当前输入框的值作为初始目录
+                String currentPath = repoPath.getText().trim();
+                if (!currentPath.isEmpty()) {
+                    File currentDir = new File(currentPath);
+                    if (currentDir.exists()) {
+                        fileChooser.setCurrentDirectory(currentDir);
+                    }
+                }
 
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
@@ -50,6 +75,15 @@ public class ExpInfoInputFrame {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fileChooser.setAcceptAllFileFilterUsed(false);
+
+                // 获取当前输入框的值作为初始目录
+                String currentPath = targetFolderPath.getText().trim();
+                if (!currentPath.isEmpty()) {
+                    File currentDir = new File(currentPath);
+                    if (currentDir.exists()) {
+                        fileChooser.setCurrentDirectory(currentDir);
+                    }
+                }
 
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();

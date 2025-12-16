@@ -1,5 +1,6 @@
 package com.supporter.prj.view;
 
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.supporter.prj.util.ExpGitHubUtil;
 
@@ -18,9 +19,11 @@ import java.util.concurrent.ExecutionException;
 public class ExpInfoInputFormDialog extends DialogWrapper {
 
     private ExpInfoInputFrame expInfoInputFrame;
+    private Project project;
 
-    public ExpInfoInputFormDialog() {
+    public ExpInfoInputFormDialog(Project project) {
         super(true);
+        this.project = project;
         init(); //触发一下init方法，否则swing样式将无法展示在会话框
         setTitle("导出信息输入"); //设置会话框标题
         setSize(660, 300); // 设置窗口大小
@@ -40,7 +43,7 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
 
     @Override
     protected JComponent createCenterPanel() {
-        expInfoInputFrame = new ExpInfoInputFrame();
+        expInfoInputFrame = new ExpInfoInputFrame(this.project);
         JPanel mainPanel = expInfoInputFrame.getMainPanel();
         expInfoInputFrame.getProgressBar().setVisible(false);
         JComboBox<String> typeComboBox = expInfoInputFrame.getTypeComboBox();
