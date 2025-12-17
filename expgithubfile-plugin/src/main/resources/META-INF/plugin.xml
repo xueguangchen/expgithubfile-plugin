@@ -19,7 +19,50 @@
         It simplifies the process of updating modified files to test or production servers,
         eliminating the need to manually copy files one by one.
         After installation, you can find it in the Tools menu as "ExpGitSubmitFile".
+        <![CDATA[
+        <h3>插件功能介绍</h3>
+        <p>该插件可以帮助开发者快速导出Git仓库中的文件变更，主要包括以下功能：</p>
+        <ul>
+            <li><b>导出已提交文件</b>：可以选择特定的Git提交记录，导出该提交中涉及的所有文件变更</li>
+            <li><b>导出未提交文件</b>：可以导出当前工作区中所有未提交的文件变更</li>
+            <li><b>可视化操作界面</b>：提供直观的图形界面，方便用户选择导出参数</li>
+            <li><b>智能路径识别</b>：自动识别项目中的Git仓库路径</li>
+            <li><b>批量文件处理</b>：支持一次导出多个提交记录中的文件变更</li>
+            <li><b>进度显示</b>：导出过程中显示进度条，让用户了解处理状态</li>
+            <li><b>快速打开导出文件</b>：提供快速打开导出文件功能，让用户更快速找到文件</li>
+        </ul>
+        <p>使用场景：适用于需要将本地代码变更部署到测试环境或生产环境的情况，避免手动逐个复制文件的繁琐操作。</p>
+        ]]>
     </description>
+    <change-notes>
+        <![CDATA[
+    <h3>版本更新说明</h3>
+    <ul>
+        <li><b>v1.0</b> - 初始版本发布</li>
+        <li>支持导出 Git 提交记录文件</li>
+        <li>支持导出未提交的变更文件</li>
+        <li>提供图形化界面操作</li>
+        <li>支持选择特定提交记录进行导出</li>
+        <li>自动识别项目 Git 仓库路径</li>
+        <li>集成到 IDEA Tools 菜单中，方便快速访问</li>
+    </ul>
+    <ul>
+        <li><b>v1.6</b> - 更新</li>
+        <li>自动识别项目中的Git仓库路径</li>
+        <li>打开已选择的文件</li>
+        <li>自动给目标文件路径赋值</li>
+    </ul>
+    <ul>
+        <li><b>v1.7</b> - 更新</li>
+        <li>支持快速打开导出文件</li>
+    </ul>
+    <ul>
+        <li><b>v1.8</b> - 更新</li>
+        <li>增加说明描述</li>
+    </ul>
+    ]]>
+    </change-notes>
+
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
