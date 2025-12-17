@@ -5,9 +5,11 @@ import com.supporter.prj.util.GitRepositoryUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
@@ -35,6 +37,8 @@ public class ExpInfoInputFrame {
     private JComboBox<String> typeComboBox;
     private JLabel commitIdsLabel;
     private JLabel commitIdsRemarkLabel;
+    private JButton openExpFileBtn;
+    private String gitRepoPath;
 
     public ExpInfoInputFrame(Project project) {
         this.project = project;
@@ -42,15 +46,16 @@ public class ExpInfoInputFrame {
         if (project != null) {
             String projectPath = project.getBasePath();
             // 在此基础上查找 Git 仓库
-            String gitRepoPath = GitRepositoryUtil.findGitRepositoryManually(projectPath);
+            String gitRepoPathTemp = GitRepositoryUtil.findGitRepositoryComprehensively(projectPath);
+            this.gitRepoPath = gitRepoPathTemp;
 
-            if (gitRepoPath != null) {
-                repoPath.setText(gitRepoPath);
+            if (StringUtils.isNotBlank(gitRepoPathTemp)) {
+                repoPath.setText(gitRepoPathTemp);
                 // 获取当前日期时间
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                 String formattedDateTime = now.format(formatter);
-                targetFolderPath.setText(gitRepoPath + File.separator + ("exp_" + formattedDateTime));
+                targetFolderPath.setText(gitRepoPathTemp + File.separator + ("exp_" + formattedDateTime));
             }
         }
 
@@ -84,9 +89,9 @@ public class ExpInfoInputFrame {
                 fileChooser.setAcceptAllFileFilterUsed(false);
 
                 // 获取当前输入框的值作为初始目录
-                String currentPath = targetFolderPath.getText().trim();
-                if (!currentPath.isEmpty()) {
-                    File currentDir = new File(currentPath);
+                //String currentPath = targetFolderPath.getText().trim();
+                if (StringUtils.isNotBlank(gitRepoPath)) {
+                    File currentDir = new File(gitRepoPath);
                     if (currentDir.exists()) {
                         fileChooser.setCurrentDirectory(currentDir);
                     }
@@ -135,6 +140,22 @@ public class ExpInfoInputFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateVisibility();
+            }
+        });
+        openExpFileBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 直接在外部打开文件夹
+                String path = repoPath.getText().trim();
+                if (StringUtils.isNotBlank(path)) {
+                    try {
+                        Desktop.getDesktop().open(new File(path));
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(expInfoJpanel, "无法打开文件夹：" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(expInfoJpanel, "路径为空！", "提示", JOptionPane.WARNING_MESSAGE);
+                }
             }
         });
     }
