@@ -146,7 +146,7 @@ public class ExpInfoInputFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 直接在外部打开文件夹
-                String path = repoPath.getText().trim();
+                String path = targetFolderPath.getText().trim();
                 if (StringUtils.isNotBlank(path)) {
                     try {
                         Desktop.getDesktop().open(new File(path));
