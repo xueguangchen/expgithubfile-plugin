@@ -148,10 +148,15 @@ public class ExpInfoInputFrame {
                 // 直接在外部打开文件夹
                 String path = targetFolderPath.getText().trim();
                 if (StringUtils.isNotBlank(path)) {
-                    try {
-                        Desktop.getDesktop().open(new File(path));
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(expInfoJpanel, "无法打开文件夹：" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                    File folder = new File(path);
+                    if (folder.exists() && folder.isDirectory()) {
+                        try {
+                            Desktop.getDesktop().open(folder);
+                        } catch (IOException ex) {
+                            JOptionPane.showMessageDialog(expInfoJpanel, "无法打开文件夹：" + ex.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(expInfoJpanel, "指定的文件夹不存在：" + path, "提示", JOptionPane.WARNING_MESSAGE);
                     }
                 } else {
                     JOptionPane.showMessageDialog(expInfoJpanel, "路径为空！", "提示", JOptionPane.WARNING_MESSAGE);
