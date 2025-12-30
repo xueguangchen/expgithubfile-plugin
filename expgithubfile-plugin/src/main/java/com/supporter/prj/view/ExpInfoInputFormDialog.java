@@ -89,6 +89,7 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
                         commitIdsArr = new String[]{commitIdsValue};
                     }
                 }
+                final String[] finalCommitIdsArr = commitIdsArr;
 
                 // 禁用按钮
                 exportBtn.setEnabled(false);
@@ -97,14 +98,33 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
                 JProgressBar progressBar = expInfoInputFrame.getProgressBar();
                 progressBar.setValue(0);
                 progressBar.setStringPainted(true);
+                progressBar.setVisible(true);  // 确保进度条可见
                 // 在后台线程中执行任务，并更新进度条
                 SwingWorker<Void, Integer> worker = new SwingWorker<Void, Integer>() {
                     @Override
                     protected Void doInBackground() throws Exception {
-                        int progress = 0;
-                        while(progress >=0 && progress <= 100){
-                            progress = ExpGitHubUtil.getProgress();
-                            publish(progress); // 发布进度信息
+                        try {
+                            // 执行实际的导出操作
+                            if ("已提交".equals(selectedValue)) {
+                                ExpGitHubUtil.expCommittedFile(repoPathValue, targetFolderPathValue, finalCommitIdsArr);
+                            } else {
+                                ExpGitHubUtil.expUncommittedFiles(repoPathValue, targetFolderPathValue);
+                            }
+
+                            // 等待操作完成并更新进度
+                            int progress;
+                            do {
+                                progress = ExpGitHubUtil.getProgress();
+                                if (progress < 100) {
+                                    publish(progress);
+                                    Thread.sleep(200); // 避免过度占用CPU
+                                }
+                            } while (progress < 100 && !isCancelled()); // 支持取消操作
+
+                            publish(100); // 确保进度条显示100%
+                        } catch (Exception ex) {
+                            // 重新抛出异常，让done()方法处理
+                            throw ex;
                         }
                         return null;
                     }
@@ -120,29 +140,32 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
                     protected void done() {
                         try {
                             get(); // 确保任何异常都被抛出
-                            progressBar.setVisible(true);
-                        } catch (InterruptedException | ExecutionException e) {
-                            e.printStackTrace();
-                        }finally {
-                            /*// 重新启用按钮
-                            exportBtn.setEnabled(true);
-                            // 显示任务完成的消息对话框（可选）
-                            JOptionPane.showMessageDialog(mainPanel, "导出完成！");*/
-                            // 使用 SwingUtilities.invokeLater 确保在 EDT 中执行
                             SwingUtilities.invokeLater(() -> {
-                                // 双重检查确保按钮状态正确
-                                if (exportBtn != null && !exportBtn.isEnabled()) {
+                                // 重新启用按钮
+                                if (exportBtn != null) {
                                     exportBtn.setEnabled(true);
                                 }
-                                publish(100); // 发布进度信息
-                                // 显示任务完成的消息对话框（可选）
+                                // 显示任务完成的消息对话框
                                 JOptionPane.showMessageDialog(mainPanel, "导出完成！");
+                            });
+                        } catch (InterruptedException | ExecutionException ex) {
+                            ex.printStackTrace();
+                            SwingUtilities.invokeLater(() -> {
+                                // 重新启用按钮
+                                if (exportBtn != null) {
+                                    exportBtn.setEnabled(true);
+                                }
+                                // 显示错误消息
+                                JOptionPane.showMessageDialog(mainPanel,
+                                        "导出失败：" + ex.getCause().getMessage(),
+                                        "错误",
+                                        JOptionPane.ERROR_MESSAGE);
                             });
                         }
                     }
                 };
                 worker.execute();
-                try {
+                /*try {
                     if (selectedValue != "已提交") {
                         // 启动后台线程
                         ExpGitHubUtil.expUncommittedFiles(repoPathValue, targetFolderPathValue);
@@ -154,7 +177,7 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
                     JOptionPane.showMessageDialog(mainPanel, "程序异常，请检查输入的信息是否正确！", "错误", JOptionPane.ERROR_MESSAGE);
                     // 重新启用按钮
                     exportBtn.setEnabled(true);
-                }
+                }*/
 
             }
         });

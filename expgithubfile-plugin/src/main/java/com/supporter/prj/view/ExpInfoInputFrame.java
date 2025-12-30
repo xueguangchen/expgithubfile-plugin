@@ -39,6 +39,7 @@ public class ExpInfoInputFrame {
     private JLabel commitIdsRemarkLabel;
     private JButton openExpFileBtn;
     private String gitRepoPath;
+    private boolean targetFolderPathIsInited = true;
 
     public ExpInfoInputFrame(Project project) {
         this.project = project;
@@ -89,17 +90,27 @@ public class ExpInfoInputFrame {
                 fileChooser.setAcceptAllFileFilterUsed(false);
 
                 // 获取当前输入框的值作为初始目录
-                //String currentPath = targetFolderPath.getText().trim();
-                if (StringUtils.isNotBlank(gitRepoPath)) {
-                    File currentDir = new File(gitRepoPath);
-                    if (currentDir.exists()) {
-                        fileChooser.setCurrentDirectory(currentDir);
+                String currentPath = targetFolderPath.getText().trim();
+                if (targetFolderPathIsInited) {
+                    if (StringUtils.isNotBlank(gitRepoPath)) {
+                        File currentDir = new File(gitRepoPath);
+                        if (currentDir.exists()) {
+                            fileChooser.setCurrentDirectory(currentDir);
+                        }
+                    }
+                }else{
+                    if (StringUtils.isNotBlank(currentPath)) {
+                        File currentDir = new File(currentPath);
+                        if (currentDir.exists()) {
+                            fileChooser.setCurrentDirectory(currentDir);
+                        }
                     }
                 }
 
                 if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = fileChooser.getSelectedFile();
                     targetFolderPath.setText(selectedFile.getAbsolutePath());
+                    targetFolderPathIsInited = false;
                 }
             }
         });
