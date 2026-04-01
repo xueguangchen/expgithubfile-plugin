@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.supporter.prj"
-version = "1.11-SNAPSHOT"
+version = "1.12-SNAPSHOT"
 
 repositories {
     maven { url 'https://maven.aliyun.com/repository/central/'}
@@ -12,6 +12,7 @@ repositories {
     maven { url 'https://maven.aliyun.com/repository/google/' }
     maven { url 'https://maven.aliyun.com/repository/jcenter/'}
     maven { url 'https://maven.aliyun.com/repository/gradle-plugin'}
+    mavenCentral() // 添加中央仓库作为补充
 }
 
 dependencies {
@@ -35,6 +36,6 @@ tasks.withType(JavaCompile) {
 patchPluginXml {
     //注意这个版本号不能高于上面intellij的version,否则runIde会报错
     sinceBuild = '222'
-    untilBuild = '253.*'
+    untilBuild = '261.*'
 }
 
