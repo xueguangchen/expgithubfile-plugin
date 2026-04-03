@@ -15,23 +15,32 @@
     <depends>com.intellij.modules.platform</depends>
 
     <description>
-        This plugin extracts git commit records and uncommitted changes to a specified folder.
-        It simplifies the process of updating modified files to test or production servers,
-        eliminating the need to manually copy files one by one.
-        After installation, you can find it in the Tools menu as "ExpGitSubmitFile".
+        A powerful Git file export tool that extracts committed and uncommitted changes to a specified folder.
+        Streamline your deployment workflow by exporting only modified files to test or production servers.
         <![CDATA[
-        <h3>插件功能介绍</h3>
-        <p>该插件可以帮助开发者快速导出Git仓库中的文件变更，主要包括以下功能：</p>
+        <h3>插件简介</h3>
+        <p>ExpGitFile 是一款高效的 Git 文件导出工具，帮助开发者快速提取代码变更，简化部署流程。</p>
+        
+        <h3>核心功能</h3>
         <ul>
-            <li><b>导出已提交文件</b>：可以选择特定的Git提交记录，导出该提交中涉及的所有文件变更</li>
-            <li><b>导出未提交文件</b>：可以导出当前工作区中所有未提交的文件变更</li>
-            <li><b>可视化操作界面</b>：提供直观的图形界面，方便用户选择导出参数</li>
-            <li><b>智能路径识别</b>：自动识别项目中的Git仓库路径</li>
-            <li><b>批量文件处理</b>：支持一次导出多个提交记录中的文件变更</li>
-            <li><b>进度显示</b>：导出过程中显示进度条，让用户了解处理状态</li>
-            <li><b>快速打开导出文件</b>：提供快速打开导出文件功能，让用户更快速找到文件</li>
+            <li><b>已提交导出</b>：选择单次或多次 Git 提交记录，一键导出所有变更文件</li>
+            <li><b>未提交导出</b>：导出工作区中未暂存或未提交的文件变更</li>
+            <li><b>智能过滤</b>：支持按文件类型、目录结构筛选，精准导出所需文件</li>
+            <li><b>文件预览</b>：导出前预览文件列表，支持差异对比，确保导出内容准确</li>
+            <li><b>批量选择</b>：快速选择最近 N 个提交、今日提交、本周提交</li>
+            <li><b>配置管理</b>：保存常用配置为模板，一键加载复用</li>
+            <li><b>导出历史</b>：记录每次导出操作，支持快速重新导出</li>
         </ul>
-        <p>使用场景：适用于需要将本地代码变更部署到测试环境或生产环境的情况，避免手动逐个复制文件的繁琐操作。</p>
+        
+        <h3>使用场景</h3>
+        <ul>
+            <li>将本地代码变更快速部署到测试/生产服务器</li>
+            <li>提取特定提交的文件用于代码审查</li>
+            <li>备份工作区的未提交修改</li>
+            <li>按需筛选导出特定类型的文件</li>
+        </ul>
+        
+        <p><b>安装后入口</b>：Tools → ExpGitSubmitFile</p>
         ]]>
     </description>
     <change-notes>
@@ -75,6 +84,17 @@
     <ul>
         <li><b>v1.12</b> - 更新</li>
         <li>支持新版本</li>
+    </ul>
+    <ul>
+        <li><b>v2.0</b> - 重大更新</li>
+        <li>新增文件过滤规则功能，支持预设规则和自定义规则</li>
+        <li>新增文件预览面板，导出前可预览文件列表和差异对比</li>
+        <li>新增导出历史管理，支持重新执行历史导出任务</li>
+        <li>新增配置模板管理，保存/加载常用配置</li>
+        <li>优化界面布局，改进用户体验</li>
+        <li>支持快速选择最近N个提交、今日/本周提交</li>
+        <li>优化进度条显示，支持成功/失败状态反馈</li>
+        <li>修复初始提交无父提交导致导出卡住的问题</li>
     </ul>
     ]]>
     </change-notes>

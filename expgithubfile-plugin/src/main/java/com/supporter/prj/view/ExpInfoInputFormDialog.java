@@ -2,198 +2,106 @@ package com.supporter.prj.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.supporter.prj.util.ExpGitHubUtil;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.concurrent.ExecutionException;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
 /**
+ * ExpGitSubmitFile 插件主对话框
+ * 使用 IntelliJ Platform UI Components 实现的新界面
+ *
  * @author xueguangchen
- * @version 1.0.0
- * @ClassName com.supporter.prj.view.ExpInfoInputFormDialog.java
- * @Description 输入弹框
- * @createTime 2024年11月16日 14:32:00
+ * @version 2.0.0
  */
 public class ExpInfoInputFormDialog extends DialogWrapper {
 
-    private ExpInfoInputFrame expInfoInputFrame;
     private Project project;
+    private ExpGitSubmitMainFrame mainFrame;
+    private QuickExportPanel quickExportPanel;
 
     public ExpInfoInputFormDialog(Project project) {
         super(true);
         this.project = project;
-        init(); //触发一下init方法，否则swing样式将无法展示在会话框
-        setTitle("导出信息输入"); //设置会话框标题
-        setSize(660, 300); // 设置窗口大小
-
+        init(); // 触发一下init方法，否则swing样式将无法展示在会话框
+        setTitle("ExpGitSubmitFile - Git文件导出工具"); // 设置会话框标题
+        setSize(900, 650); // 设置窗口大小（增大以适应新界面）
+        setResizable(true); // 允许用户调整窗口大小
     }
 
     @Override
     protected JComponent createNorthPanel() {
-        return null; //返回位于会话框north位置的swing样式
+        // 可以在这里添加顶部标题栏
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JLabel titleLabel = new JLabel("ExpGitSubmitFile - Git文件导出工具");
+        titleLabel.setFont(new Font(titleLabel.getFont().getName(), Font.BOLD, 16));
+        titleLabel.setForeground(new Color(0, 0, 139)); // 深蓝色标题
+        titleLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
+
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+
+        // 添加版本信息
+        JLabel versionLabel = new JLabel("Version 2.0.0");
+        versionLabel.setForeground(Color.GRAY);
+        headerPanel.add(versionLabel, BorderLayout.EAST);
+
+        return headerPanel;
     }
 
-    // 特别说明：不需要展示SouthPanel要重写返回null，否则IDEA将展示默认的"Cancel"和"OK"按钮
     @Override
     protected JComponent createSouthPanel() {
-        return null;
+        return null; // 返回null以隐藏默认的OK/Cancel按钮
     }
 
     @Override
     protected JComponent createCenterPanel() {
-        expInfoInputFrame = new ExpInfoInputFrame(this.project);
-        JPanel mainPanel = expInfoInputFrame.getMainPanel();
-        expInfoInputFrame.getProgressBar().setVisible(false);
-        JComboBox<String> typeComboBox = expInfoInputFrame.getTypeComboBox();
-        typeComboBox.addItem("已提交");
-        typeComboBox.addItem("未提交");
-        typeComboBox.setSelectedItem("已提交");
-        JButton exportBtn = expInfoInputFrame.getExportBtn();
+        // 创建主框架
+        mainFrame = new ExpGitSubmitMainFrame(project);
+        JPanel mainPanel = mainFrame.getMainPanel();
 
-        // 为按钮添加事件监听器
-        exportBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JTextField repoPath = expInfoInputFrame.getRepoPath();
-                JTextField targetFolderPath = expInfoInputFrame.getTargetFolderPath();
-                JTextArea commitIds = expInfoInputFrame.getCommitIds();
-                String repoPathValue = repoPath.getText().trim();
-                String targetFolderPathValue = targetFolderPath.getText().trim();
-                String commitIdsValue = commitIds.getText().trim();
-                if (repoPathValue.isEmpty()) {
-                    // 给出提示
-                    JOptionPane.showMessageDialog(mainPanel, "本地仓库路径不能为空！", "错误", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (targetFolderPathValue.isEmpty()) {
-                    // 给出提示
-                    JOptionPane.showMessageDialog(mainPanel, "目标文件路径不能为空！", "错误", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                String selectedValue = (String) typeComboBox.getSelectedItem();
-                String[] commitIdsArr = {};
-                if(selectedValue == "已提交"){
-                    if (commitIdsValue.isEmpty()) {
-                        // 给出提示
-                        JOptionPane.showMessageDialog(mainPanel, "提交的SHA-1哈希值不能为空！", "错误", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }
+        // 获取快速导出面板
+        quickExportPanel = mainFrame.getQuickExportPanel();
 
-                    if(commitIdsValue.contains(",")){
-                        commitIdsArr = commitIdsValue.split(",");
-                    }else if(commitIdsValue.contains("，")){
-                        commitIdsArr = commitIdsValue.split(",");
-                    }else{
-                        commitIdsArr = new String[]{commitIdsValue};
-                    }
-                }
-                final String[] finalCommitIdsArr = commitIdsArr;
+        // 导出逻辑已由 QuickExportPanel 内部处理
 
-                // 禁用按钮
-                exportBtn.setEnabled(false);
+        // 为快速导出面板设置一些默认值
+        setupDefaultValues();
 
-                // 创建进度条
-                JProgressBar progressBar = expInfoInputFrame.getProgressBar();
-                progressBar.setValue(0);
-                progressBar.setStringPainted(true);
-                progressBar.setVisible(true);  // 确保进度条可见
-                // 在后台线程中执行任务，并更新进度条
-                SwingWorker<Void, Integer> worker = new SwingWorker<Void, Integer>() {
-                    @Override
-                    protected Void doInBackground() throws Exception {
-                        try {
-                            // 执行实际的导出操作
-                            if ("已提交".equals(selectedValue)) {
-                                ExpGitHubUtil.expCommittedFile(repoPathValue, targetFolderPathValue, finalCommitIdsArr);
-                            } else {
-                                ExpGitHubUtil.expUncommittedFiles(repoPathValue, targetFolderPathValue);
-                            }
-
-                            // 等待操作完成并更新进度
-                            int progress;
-                            do {
-                                progress = ExpGitHubUtil.getProgress();
-                                if (progress < 100) {
-                                    publish(progress);
-                                    Thread.sleep(200); // 避免过度占用CPU
-                                }
-                            } while (progress < 100 && !isCancelled()); // 支持取消操作
-
-                            publish(100); // 确保进度条显示100%
-                        } catch (Exception ex) {
-                            // 重新抛出异常，让done()方法处理
-                            throw ex;
-                        }
-                        return null;
-                    }
-
-                    @Override
-                    protected void process(java.util.List<Integer> chunks) {
-                        for (int value : chunks) {
-                            progressBar.setValue(value);
-                        }
-                    }
-
-                    @Override
-                    protected void done() {
-                        try {
-                            get(); // 确保任何异常都被抛出
-                            SwingUtilities.invokeLater(() -> {
-                                // 重新启用按钮
-                                if (exportBtn != null) {
-                                    exportBtn.setEnabled(true);
-                                }
-                                // 显示任务完成的消息对话框
-                                JOptionPane.showMessageDialog(mainPanel, "导出完成！");
-                            });
-                        } catch (InterruptedException | ExecutionException ex) {
-                            ex.printStackTrace();
-                            SwingUtilities.invokeLater(() -> {
-                                // 重新启用按钮
-                                if (exportBtn != null) {
-                                    exportBtn.setEnabled(true);
-                                }
-                                // 显示错误消息
-                                JOptionPane.showMessageDialog(mainPanel,
-                                        "导出失败：" + ex.getCause().getMessage(),
-                                        "错误",
-                                        JOptionPane.ERROR_MESSAGE);
-                            });
-                        }
-                    }
-                };
-                worker.execute();
-                /*try {
-                    if (selectedValue != "已提交") {
-                        // 启动后台线程
-                        ExpGitHubUtil.expUncommittedFiles(repoPathValue, targetFolderPathValue);
-                    } else {
-                        ExpGitHubUtil.expCommittedFile(repoPathValue, targetFolderPathValue, commitIdsArr);
-                    }
-                } catch (Exception ex) {
-                    // 给出提示
-                    JOptionPane.showMessageDialog(mainPanel, "程序异常，请检查输入的信息是否正确！", "错误", JOptionPane.ERROR_MESSAGE);
-                    // 重新启用按钮
-                    exportBtn.setEnabled(true);
-                }*/
-
-            }
-        });
-
-        // 这里我们只使用MyFrame的mainPanel，而不是整个JFrame
         return mainPanel;
+    }
+
+    private void setupDefaultValues() {
+        // 设置默认值
+        if (project != null) {
+            String projectPath = project.getBasePath();
+            if (projectPath != null) {
+                // 设置默认的导出路径
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String formattedDateTime = now.format(formatter);
+                String defaultTargetPath = projectPath + java.io.File.separator + ("exp_" + formattedDateTime);
+
+                // 快速设置路径（如果字段存在）
+                quickExportPanel.getRepoPath().setText(projectPath);
+                quickExportPanel.getTargetFolderPath().setText(defaultTargetPath);
+            }
+        }
+
+        // 设置默认的导出类型
+        quickExportPanel.getTypeComboBox().setSelectedIndex(0); // 选择"已提交"
     }
 
     @Override
     public void doOKAction() {
-        // 处理OK按钮的操作
+        // 这里可以处理OK按钮的操作，如果需要的话
         super.doOKAction();
     }
 
     @Override
     protected void init() {
         super.init();
+        // DialogWrapper 会自动处理窗口关闭事件
     }
 }
