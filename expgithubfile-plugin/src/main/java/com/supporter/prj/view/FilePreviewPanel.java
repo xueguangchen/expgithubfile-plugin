@@ -611,9 +611,8 @@ public class FilePreviewPanel {
         String fileName = new java.io.File(item.getFilePath()).getName();
         String icon = getFileIcon(item.getChangeType());
         String size = formatFileSize(item.getFileSize());
-        String lines = String.format("↑%d ↓%d", item.getAddedLines(), item.getDeletedLines());
 
-        return String.format("%s %s [%s] %s", icon, fileName, size, lines);
+        return String.format("%s %s [%s]", icon, fileName, size);
     }
 
     private String getFileIcon(String changeType) {
@@ -999,9 +998,8 @@ public class FilePreviewPanel {
                     String changeIcon = getFileIcon(item.getChangeType());
                     String fileName = new java.io.File(item.getFilePath()).getName();
                     String size = formatFileSize(item.getFileSize());
-                    String lines = String.format("↑%d ↓%d", item.getAddedLines(), item.getDeletedLines());
                     
-                    setText(checkIcon + changeIcon + " " + fileName + " [" + size + "] " + lines);
+                    setText(checkIcon + changeIcon + " " + fileName + " [" + size + "]");
                     
                     // 未选中的文件显示为灰色
                     if (!item.isSelected()) {

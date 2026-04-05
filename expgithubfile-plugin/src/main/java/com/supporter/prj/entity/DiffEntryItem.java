@@ -31,7 +31,6 @@ public class DiffEntryItem {
         StringBuilder sb = new StringBuilder();
         sb.append(getChangeTypeIcon()).append(" ");
         sb.append(filePath);
-        sb.append(" (+").append(addedLines).append(" -").append(deletedLines).append(")");
         return sb.toString();
     }
     

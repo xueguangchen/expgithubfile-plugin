@@ -205,14 +205,17 @@ public class ExpGitHubUtil {
             System.out.println("[ExpGitHubUtil] 仓库目录存在: " + repoDir.exists() + ", 是目录: " + repoDir.isDirectory());
             File gitDir = new File(repoDir, ".git");
             System.out.println("[ExpGitHubUtil] .git 目录存在: " + gitDir.exists());
-            
+
             Git git = Git.open(repoDir);
-            Iterable<RevCommit> commits = git.log().call();
-            int count = 0;
+            org.eclipse.jgit.api.LogCommand logCommand = git.log();
+
+            // 在 Git 层面限制数量，大幅提升性能
+            if (maxCount > 0) {
+                logCommand.setMaxCount((int) maxCount);
+            }
+
+            Iterable<RevCommit> commits = logCommand.call();
             for (RevCommit commit : commits) {
-                if(maxCount > 0){
-                    if (count >= maxCount) break; // 限制获取的提交记录数量
-                }
                 String commitAuthor = commit.getAuthorIdent().getName();
                 String commitMessage = commit.getFullMessage();
                 Date commitDate = commit.getAuthorIdent().getWhen();
@@ -231,7 +234,6 @@ public class ExpGitHubUtil {
                             commit.getFullMessage()
                     ));
                 }
-                count++;
             }
             System.out.println("[ExpGitHubUtil] 获取到 " + gitCommitHistoryList.size() + " 条提交记录");
             git.close();

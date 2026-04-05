@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.TextBrowseFolderListener;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
 import com.supporter.prj.entity.ExportHistory;
 import com.supporter.prj.entity.ExportOptions;
 import com.supporter.prj.entity.ExportTemplate;
@@ -87,12 +88,12 @@ public class QuickExportPanel {
     private static final int LABEL_WIDTH = 80;
     
     private void initialize() {
-        // 创建主面板 - 使用BorderLayout
-        panel = new JPanel(new BorderLayout());
+        // 创建主面板 - 使用JBPanel确保主题适配
+        panel = new JBPanel<>(new BorderLayout());
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         // 上部内容区
-        JPanel contentPanel = new JPanel();
+        JPanel contentPanel = new JBPanel<>();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         
         // 创建各行的面板
@@ -114,7 +115,7 @@ public class QuickExportPanel {
         addRow(contentPanel, createFilterRuleRow());
 
         // 底部区域（按钮 + 进度条）
-        JPanel bottomPanel = new JPanel();
+        JPanel bottomPanel = new JBPanel<>();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
         addRow(bottomPanel, createButtonRow());
         addRow(bottomPanel, createProgressRow());
@@ -136,7 +137,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createRepoPathRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
         
@@ -189,7 +190,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createTargetPathRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
         
@@ -228,7 +229,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createTypeRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
@@ -248,7 +249,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createOptionsRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
@@ -287,7 +288,7 @@ public class QuickExportPanel {
     private JPanel commitAreaRowPanel;
     
     private JPanel createCommitScopeRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
@@ -328,7 +329,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createCommitAreaRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
         
@@ -338,7 +339,7 @@ public class QuickExportPanel {
         commitIdsLabel.setVisible(true);
         row.add(commitIdsLabel);
         
-        commitPanel = new JPanel();
+        commitPanel = new JBPanel<>();
         commitPanel.setLayout(new BoxLayout(commitPanel, BoxLayout.Y_AXIS));
         commitPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
 
@@ -358,7 +359,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createFilterRuleRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
@@ -382,7 +383,7 @@ public class QuickExportPanel {
     }
     
     private JPanel createButtonRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         
@@ -394,10 +395,9 @@ public class QuickExportPanel {
         row.add(previewBtn);
         row.add(Box.createHorizontalStrut(10));
 
+        // 使用 IDEA 默认风格按钮，自动适配主题
         exportBtn = new JButton("开始导出");
-        exportBtn.setFont(new Font(exportBtn.getFont().getName(), Font.BOLD, 12));
-        exportBtn.setBackground(new Color(76, 175, 80));
-        exportBtn.setForeground(Color.WHITE);
+        exportBtn.putClientProperty("JButton.buttonStyle", "primary");
         exportBtn.addActionListener(e -> startExport());
         row.add(exportBtn);
         row.add(Box.createHorizontalStrut(10));
@@ -432,14 +432,14 @@ public class QuickExportPanel {
     }
     
     private JPanel createProgressRow() {
-        JPanel row = new JPanel();
+        JPanel row = new JBPanel<>();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         
         // 弹性空间将进度条推到右边
         row.add(Box.createHorizontalGlue());
         
-        progressPanel = new JPanel(new BorderLayout(5, 0));
+        progressPanel = new JBPanel<>(new BorderLayout(5, 0));
         progressBar = new RoundedProgressBar();
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
@@ -936,6 +936,7 @@ public class QuickExportPanel {
 
     /**
      * 静默快速选择提交记录（不显示弹窗）
+     * 使用后台线程避免阻塞 UI
      */
     private void quickSelectCommitsSilent(String selection) {
         String repoPath = repoPathField.getText().trim();
@@ -943,50 +944,59 @@ public class QuickExportPanel {
             return;
         }
 
-        try {
-            java.util.List<com.supporter.prj.entity.GitCommitHistory> commits = null;
+        // 显示加载状态
+        commitIdsArea.setText("加载中...");
 
-            if (selection.startsWith("最近")) {
-                int count = Integer.parseInt(selection.replaceAll("[^0-9]", ""));
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, count, null, null, null, null);
-            } else if (selection.equals("今天提交")) {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                cal.set(java.util.Calendar.MINUTE, 0);
-                cal.set(java.util.Calendar.SECOND, 0);
-                cal.set(java.util.Calendar.MILLISECOND, 0);
-                java.util.Date startOfDay = cal.getTime();
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
-                cal.set(java.util.Calendar.MINUTE, 59);
-                cal.set(java.util.Calendar.SECOND, 59);
-                java.util.Date endOfDay = cal.getTime();
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfDay, endOfDay);
-            } else if (selection.equals("本周提交")) {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                cal.set(java.util.Calendar.MINUTE, 0);
-                cal.set(java.util.Calendar.SECOND, 0);
-                cal.set(java.util.Calendar.MILLISECOND, 0);
-                java.util.Date startOfWeek = cal.getTime();
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfWeek, null);
-            }
+        // 在后台线程执行
+        new Thread(() -> {
+            try {
+                java.util.List<com.supporter.prj.entity.GitCommitHistory> commits = null;
 
-            if (commits != null && !commits.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (com.supporter.prj.entity.GitCommitHistory commit : commits) {
-                    if (sb.length() > 0) {
-                        sb.append(",\n");
-                    }
-                    sb.append(commit.getCommitId());
+                if (selection.startsWith("最近")) {
+                    int count = Integer.parseInt(selection.replaceAll("[^0-9]", ""));
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, count, null, null, null, null);
+                } else if (selection.equals("今天提交")) {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    cal.set(java.util.Calendar.MILLISECOND, 0);
+                    java.util.Date startOfDay = cal.getTime();
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    java.util.Date endOfDay = cal.getTime();
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfDay, endOfDay);
+                } else if (selection.equals("本周提交")) {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    cal.set(java.util.Calendar.MILLISECOND, 0);
+                    java.util.Date startOfWeek = cal.getTime();
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfWeek, null);
                 }
-                commitIdsArea.setText(sb.toString());
-            } else {
-                commitIdsArea.setText("");
+
+                final java.util.List<com.supporter.prj.entity.GitCommitHistory> finalCommits = commits;
+                SwingUtilities.invokeLater(() -> {
+                    if (finalCommits != null && !finalCommits.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (com.supporter.prj.entity.GitCommitHistory commit : finalCommits) {
+                            if (sb.length() > 0) {
+                                sb.append(",\n");
+                            }
+                            sb.append(commit.getCommitId());
+                        }
+                        commitIdsArea.setText(sb.toString());
+                    } else {
+                        commitIdsArea.setText("");
+                    }
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> commitIdsArea.setText(""));
             }
-        } catch (Exception e) {
-            commitIdsArea.setText("");
-        }
+        }).start();
     }
 
     public TextFieldWithBrowseButton getRepoPath() {
@@ -1129,6 +1139,7 @@ public class QuickExportPanel {
 
     /**
      * 快速选择提交记录（静默模式，不显示提示框）
+     * 使用后台线程避免阻塞 UI
      */
     private void quickSelectCommits(String selection) {
         String repoPath = repoPathField.getText().trim();
@@ -1136,50 +1147,59 @@ public class QuickExportPanel {
             return;
         }
 
-        try {
-            java.util.List<com.supporter.prj.entity.GitCommitHistory> commits = null;
+        // 显示加载状态
+        commitIdsArea.setText("加载中...");
 
-            if (selection.startsWith("最近")) {
-                int count = Integer.parseInt(selection.replaceAll("[^0-9]", ""));
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, count, null, null, null, null);
-            } else if (selection.equals("今天提交")) {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                cal.set(java.util.Calendar.MINUTE, 0);
-                cal.set(java.util.Calendar.SECOND, 0);
-                cal.set(java.util.Calendar.MILLISECOND, 0);
-                java.util.Date startOfDay = cal.getTime();
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
-                cal.set(java.util.Calendar.MINUTE, 59);
-                cal.set(java.util.Calendar.SECOND, 59);
-                java.util.Date endOfDay = cal.getTime();
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfDay, endOfDay);
-            } else if (selection.equals("本周提交")) {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-                cal.set(java.util.Calendar.MINUTE, 0);
-                cal.set(java.util.Calendar.SECOND, 0);
-                cal.set(java.util.Calendar.MILLISECOND, 0);
-                java.util.Date startOfWeek = cal.getTime();
-                commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfWeek, null);
-            }
+        // 在后台线程执行
+        new Thread(() -> {
+            try {
+                java.util.List<com.supporter.prj.entity.GitCommitHistory> commits = null;
 
-            if (commits != null && !commits.isEmpty()) {
-                StringBuilder sb = new StringBuilder();
-                for (com.supporter.prj.entity.GitCommitHistory commit : commits) {
-                    if (sb.length() > 0) {
-                        sb.append(",\n");
-                    }
-                    sb.append(commit.getCommitId());
+                if (selection.startsWith("最近")) {
+                    int count = Integer.parseInt(selection.replaceAll("[^0-9]", ""));
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, count, null, null, null, null);
+                } else if (selection.equals("今天提交")) {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    cal.set(java.util.Calendar.MILLISECOND, 0);
+                    java.util.Date startOfDay = cal.getTime();
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    java.util.Date endOfDay = cal.getTime();
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfDay, endOfDay);
+                } else if (selection.equals("本周提交")) {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.set(java.util.Calendar.DAY_OF_WEEK, java.util.Calendar.MONDAY);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    cal.set(java.util.Calendar.MILLISECOND, 0);
+                    java.util.Date startOfWeek = cal.getTime();
+                    commits = ExpGitHubUtil.fetchGitCommitHistory(repoPath, 0, null, null, startOfWeek, null);
                 }
-                commitIdsArea.setText(sb.toString());
-            } else {
-                commitIdsArea.setText("");
+
+                final java.util.List<com.supporter.prj.entity.GitCommitHistory> finalCommits = commits;
+                SwingUtilities.invokeLater(() -> {
+                    if (finalCommits != null && !finalCommits.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (com.supporter.prj.entity.GitCommitHistory commit : finalCommits) {
+                            if (sb.length() > 0) {
+                                sb.append(",\n");
+                            }
+                            sb.append(commit.getCommitId());
+                        }
+                        commitIdsArea.setText(sb.toString());
+                    } else {
+                        commitIdsArea.setText("");
+                    }
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> commitIdsArea.setText(""));
             }
-        } catch (Exception e) {
-            commitIdsArea.setText("");
-        }
+        }).start();
     }
 
     /**

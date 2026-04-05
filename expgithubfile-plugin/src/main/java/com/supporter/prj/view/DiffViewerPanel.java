@@ -117,7 +117,7 @@ public class DiffViewerPanel {
         // 创建表格模型
         tableModel = new DefaultTableModel(
                 new Object[][]{},
-                new Object[]{"文件路径", "变更类型", "新增行", "删除行", "状态"}
+                new Object[]{"文件路径", "变更类型", "状态"}
         ) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -126,11 +126,9 @@ public class DiffViewerPanel {
         };
 
         diffTable = new JBTable(tableModel);
-        diffTable.getColumnModel().getColumn(0).setPreferredWidth(300);
+        diffTable.getColumnModel().getColumn(0).setPreferredWidth(400);
         diffTable.getColumnModel().getColumn(1).setPreferredWidth(80);
-        diffTable.getColumnModel().getColumn(2).setPreferredWidth(60);
-        diffTable.getColumnModel().getColumn(3).setPreferredWidth(60);
-        diffTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+        diffTable.getColumnModel().getColumn(2).setPreferredWidth(80);
 
         diffTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -260,8 +258,6 @@ public class DiffViewerPanel {
             tableModel.addRow(new Object[]{
                     item.getFilePath(),
                     item.getChangeTypeIcon() + " " + item.getChangeTypeDesc(),
-                    "+" + item.getAddedLines(),
-                    "-" + item.getDeletedLines(),
                     "查看"
             });
         }
@@ -270,7 +266,6 @@ public class DiffViewerPanel {
     private void updateStatistics() {
         int total = diffItems.size();
         int addCount = 0, modifyCount = 0, deleteCount = 0;
-        int totalAdded = 0, totalDeleted = 0;
 
         for (DiffEntryItem item : diffItems) {
             switch (item.getChangeType()) {
@@ -278,13 +273,11 @@ public class DiffViewerPanel {
                 case "MODIFY": modifyCount++; break;
                 case "DELETE": deleteCount++; break;
             }
-            totalAdded += item.getAddedLines();
-            totalDeleted += item.getDeletedLines();
         }
 
         statisticsLabel.setText(String.format(
-                "统计: 共 %d 个文件 | 新增:%d | 修改:%d | 删除:%d | 总变更行数:+%d/-%d",
-                total, addCount, modifyCount, deleteCount, totalAdded, totalDeleted
+                "统计: 共 %d 个文件 | 新增:%d | 修改:%d | 删除:%d",
+                total, addCount, modifyCount, deleteCount
         ));
     }
 
@@ -347,7 +340,6 @@ public class DiffViewerPanel {
             report.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
             report.append("文件: ").append(item.getFilePath()).append("\n");
             report.append("类型: ").append(item.getChangeTypeDesc()).append("\n");
-            report.append("变更: +").append(item.getAddedLines()).append(" -").append(item.getDeletedLines()).append("\n");
             if (item.getNewContent() != null && !item.getNewContent().isEmpty()) {
                 report.append("\n").append(item.getNewContent()).append("\n");
             }
@@ -445,7 +437,7 @@ public class DiffViewerPanel {
     public void clearDiffItems() {
         this.diffItems = new ArrayList<>();
         updateTable();
-        statisticsLabel.setText("统计: 共 0 个文件 | 新增:0 | 修改:0 | 删除:0 | 总变更行数:0");
+        statisticsLabel.setText("统计: 共 0 个文件 | 新增:0 | 修改:0 | 删除:0");
         diffContentArea.setText("请先预览文件，差异数据将在预览后显示...");
     }
 
