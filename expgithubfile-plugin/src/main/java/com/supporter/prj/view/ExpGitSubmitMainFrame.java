@@ -58,6 +58,9 @@ public class ExpGitSubmitMainFrame {
         filePreviewPanel.setDiffViewerPanel(diffViewerPanel);
         filePreviewPanel.setExportHistoryPanel(exportHistoryPanel);
         configManagePanel.setQuickExportPanel(quickExportPanel);
+        
+        // 所有面板关联完成后，重新同步仓库路径（防止被其他组件覆盖）
+        quickExportPanel.syncRepoPath();
 
         // 添加标签页 - 核心功能
         tabbedPane.addTab("快速导出", quickExportPanel.getPanel());

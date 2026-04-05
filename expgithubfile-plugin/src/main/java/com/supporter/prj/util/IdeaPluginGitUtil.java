@@ -1,4 +1,4 @@
-package com.supporter.prj.util;// 在IDEA插件的Action或Component中使用
+package com.supporter.prj.util;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,10 +15,19 @@ public class IdeaPluginGitUtil {
             return null;
         }
 
-        // 获取项目根目录
-        VirtualFile baseDir = project.getProjectFile();
-        if (baseDir != null) {
-            return baseDir.getPath();
+        // 优先使用 getBasePath() 获取项目根目录
+        String basePath = project.getBasePath();
+        if (basePath != null) {
+            return basePath;
+        }
+
+        // 备选方案：使用 getProjectFile() 的父目录
+        VirtualFile projectFile = project.getProjectFile();
+        if (projectFile != null) {
+            VirtualFile parent = projectFile.getParent();
+            if (parent != null) {
+                return parent.getPath();
+            }
         }
         return null;
     }
@@ -30,9 +39,13 @@ public class IdeaPluginGitUtil {
      */
     public static String getIdeaGitRepositoryPath(Project project) {
         String projectRoot = getIdeaProjectRootPath(project);
+        System.out.println("[IdeaPluginGitUtil] 项目根路径: " + projectRoot);
+        
         if (projectRoot != null) {
-            // 使用原有的手动查找方法
-            return GitRepositoryUtil.findGitRepositoryManually(projectRoot);
+            // 使用全面查找方法
+            String repoPath = GitRepositoryUtil.findGitRepositoryComprehensively(projectRoot);
+            System.out.println("[IdeaPluginGitUtil] 找到仓库路径: " + repoPath);
+            return repoPath;
         }
         return null;
     }

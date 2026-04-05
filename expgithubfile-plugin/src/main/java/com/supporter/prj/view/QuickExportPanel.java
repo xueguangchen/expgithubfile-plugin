@@ -14,6 +14,7 @@ import com.supporter.prj.entity.FilterRule;
 import com.supporter.prj.util.ConfigManager;
 import com.supporter.prj.util.ExpGitHubUtil;
 import com.supporter.prj.util.ExportHistoryManager;
+import com.supporter.prj.util.GitRepositoryUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -23,6 +24,8 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.io.File;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +60,7 @@ public class QuickExportPanel {
     private JPanel commitPanel;
     private String gitRepoPath;
     private boolean targetFolderPathIsInited = true;
+    private boolean isInitialized = false; // 标记初始化是否完成
     
     // 过滤规则相关
     private JButton filterRuleBtn;
@@ -576,6 +580,7 @@ public class QuickExportPanel {
      * 应用配置
      */
     public void applyConfig(ConfigManagePanel.ConfigItem config) {
+        System.out.println("[QuickExportPanel] applyConfig 被调用, config.getRepoPath() = " + config.getRepoPath());
         if (config.getRepoPath() != null) {
             repoPathField.setText(config.getRepoPath());
         }
@@ -646,23 +651,41 @@ public class QuickExportPanel {
     }
 
     private void initializeDefaults() {
+        System.out.println("[QuickExportPanel] initializeDefaults() 开始执行");
+        
         // 使用 project 获取项目路径
         if (project != null) {
             String projectPath = project.getBasePath();
+            System.out.println("[QuickExportPanel] projectPath = " + projectPath);
+            
             if (projectPath != null) {
-                // TODO: 使用 GitRepositoryUtil 获取 Git 仓库路径
-                // this.gitRepoPath = GitRepositoryUtil.findGitRepositoryComprehensively(projectPath);
-                // if (StringUtils.isNotBlank(gitRepoPath)) {
-                //     repoPathField.setText(gitRepoPath);
-                //
-                //     // 获取当前日期时间
-                //     LocalDateTime now = LocalDateTime.now();
-                //     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-                //     String formattedDateTime = now.format(formatter);
-                //     targetPathField.setText(gitRepoPath + File.separator + ("exp_" + formattedDateTime));
-                // }
+                // 使用 GitRepositoryUtil 获取 Git 仓库路径
+                this.gitRepoPath = GitRepositoryUtil.findGitRepositoryComprehensively(projectPath);
+                System.out.println("[QuickExportPanel] 找到的 gitRepoPath = " + gitRepoPath);
+                
+                if (StringUtils.isNotBlank(gitRepoPath)) {
+                    System.out.println("[QuickExportPanel] initializeDefaults 设置 repoPathField: " + gitRepoPath);
+                    repoPathField.setText(gitRepoPath);
+
+                    // 获取当前日期时间
+                    LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                    String formattedDateTime = now.format(formatter);
+                    targetPathField.setText(gitRepoPath + File.separator + ("exp_" + formattedDateTime));
+
+                    // 更新导出历史面板的仓库路径（此时可能为null，后续设置）
+                    if (exportHistoryPanel != null) {
+                        exportHistoryPanel.setCurrentRepoPath(gitRepoPath);
+                    }
+                }
             }
+        } else {
+            System.out.println("[QuickExportPanel] project 为 null");
         }
+        
+        // 标记初始化完成
+        isInitialized = true;
+        System.out.println("[QuickExportPanel] 初始化完成，isInitialized = true");
     }
 
     private void updateVisibility() {
@@ -866,12 +889,25 @@ public class QuickExportPanel {
      * 仓库路径变化时的处理
      */
     private void onRepoPathChanged() {
+        // 初始化完成前不响应变化事件
+        if (!isInitialized) {
+            System.out.println("[QuickExportPanel] onRepoPathChanged() 初始化未完成，跳过");
+            return;
+        }
+        
+        System.out.println("[QuickExportPanel] onRepoPathChanged() 被调用");
+        System.out.println("[QuickExportPanel] 调用堆栈: " + java.util.Arrays.toString(Thread.currentThread().getStackTrace()));
+        
         resetProgressBar();
         String repoPath = repoPathField.getText().trim();
+        System.out.println("[QuickExportPanel] onRepoPathChanged() repoPath = " + repoPath);
 
         // 更新导出历史面板的仓库路径过滤
         if (exportHistoryPanel != null) {
+            System.out.println("[QuickExportPanel] onRepoPathChanged() 设置 exportHistoryPanel.setCurrentRepoPath: " + repoPath);
             exportHistoryPanel.setCurrentRepoPath(repoPath);
+        } else {
+            System.out.println("[QuickExportPanel] onRepoPathChanged() exportHistoryPanel 为 null，跳过设置");
         }
 
         // 检查仓库路径是否有效
@@ -993,6 +1029,27 @@ public class QuickExportPanel {
      */
     public void setExportHistoryPanel(ExportHistoryPanel exportHistoryPanel) {
         this.exportHistoryPanel = exportHistoryPanel;
+        // 设置关联后，立即同步当前的仓库路径
+        if (exportHistoryPanel != null && gitRepoPath != null) {
+            System.out.println("[QuickExportPanel] setExportHistoryPanel 设置仓库路径: " + gitRepoPath);
+            exportHistoryPanel.setCurrentRepoPath(gitRepoPath);
+        }
+    }
+    
+    /**
+     * 同步仓库路径到所有关联面板
+     * 在所有面板初始化完成后调用，确保正确的仓库路径被应用
+     */
+    public void syncRepoPath() {
+        System.out.println("[QuickExportPanel] syncRepoPath() 被调用, gitRepoPath = " + gitRepoPath);
+        if (gitRepoPath != null) {
+            // 确保文本框显示正确的路径
+            repoPathField.setText(gitRepoPath);
+            // 更新导出历史面板
+            if (exportHistoryPanel != null) {
+                exportHistoryPanel.setCurrentRepoPath(gitRepoPath);
+            }
+        }
     }
 
     /**

@@ -73,18 +73,18 @@ public class ExpInfoInputFormDialog extends DialogWrapper {
     }
 
     private void setupDefaultValues() {
-        // 设置默认值
+        // 注意：仓库路径已在 QuickExportPanel.initializeDefaults() 中正确设置
+        // 这里只设置目标路径（基于工作空间路径）
+        
         if (project != null) {
             String projectPath = project.getBasePath();
             if (projectPath != null) {
-                // 设置默认的导出路径
+                // 设置默认的导出路径（基于工作空间路径）
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                 String formattedDateTime = now.format(formatter);
                 String defaultTargetPath = projectPath + java.io.File.separator + ("exp_" + formattedDateTime);
-
-                // 快速设置路径（如果字段存在）
-                quickExportPanel.getRepoPath().setText(projectPath);
+                
                 quickExportPanel.getTargetFolderPath().setText(defaultTargetPath);
             }
         }

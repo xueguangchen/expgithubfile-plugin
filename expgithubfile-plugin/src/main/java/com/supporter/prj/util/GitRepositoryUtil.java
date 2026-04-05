@@ -1,137 +1,84 @@
 package com.supporter.prj.util;
 
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-
 import java.io.File;
 
 public class GitRepositoryUtil {
 
     /**
-     * 更可靠地获取当前项目的Git仓库路径
-     * @return 仓库根路径
-     */
-    public static String getCurrentRepositoryPath() {
-        try {
-            // 方法1: 通过类路径获取应用位置，然后查找Git仓库
-            String classPath = GitRepositoryUtil.class.getProtectionDomain()
-                    .getCodeSource().getLocation().toURI().getPath();
-            File classFile = new File(classPath);
-
-            // 从类文件位置开始向上查找
-            return getLocalRepositoryPath(classFile.getAbsolutePath());
-        } catch (Exception e) {
-            // 回退到原来的方法
-            return getLocalRepositoryPath(System.getProperty("user.dir"));
-        }
-    }
-
-    /**
-     * 增强版的本地Git仓库路径查找
-     * @param workingDir 工作目录
-     * @return 仓库根路径
-     */
-    public static String getLocalRepositoryPath(String workingDir) {
-        try {
-            File startDir = new File(workingDir);
-
-            // 确保起始目录存在
-            if (!startDir.exists()) {
-                return null;
-            }
-
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = builder
-                    .findGitDir(startDir)  // 从指定目录开始查找
-                    .setMustExist(true)    // 必须找到存在的仓库
-                    .build();
-
-            File workTree = repository.getWorkTree();
-            return workTree != null ? workTree.getAbsolutePath() : null;
-        } catch (Exception e) {
-            System.err.println("查找Git仓库失败: " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * 手动查找Git仓库根目录（备选方案）
-     * @param startPath 起始路径
+     * 全面查找Git仓库
+     * 查找顺序：当前层级 -> 向上查找 -> 向下查找（一层子目录）
+     * @param workspacePath 工作空间路径
      * @return Git仓库根目录路径
      */
-    public static String findGitRepositoryManually(String startPath) {
-        File currentDir = new File(startPath);
+    public static String findGitRepositoryComprehensively(String workspacePath) {
+        System.out.println("[GitRepositoryUtil] ========== 开始查找Git仓库 ==========");
+        System.out.println("[GitRepositoryUtil] 工作空间路径: " + workspacePath);
 
-        while (currentDir != null && currentDir.exists()) {
-            File gitDir = new File(currentDir, ".git");
-            if (gitDir.exists() && gitDir.isDirectory()) {
-                return currentDir.getAbsolutePath();
-            }
-            currentDir = currentDir.getParentFile();
-        }
-
-        return null;
-    }
-
-    /**
-     * 手动查找Git仓库根目录-全面查找Git仓库
-     * @param startPath 起始路径
-     * @return Git仓库根目录路径
-     */
-    public static String findGitRepositoryComprehensively(String startPath) {
-        File startDir = new File(startPath);
-
-        if (!startDir.exists()) {
-            return startPath;
-        }
-
-        // 向上查找
-        File currentDir = startDir;
-        while (currentDir != null && currentDir.exists()) {
-            File gitDir = new File(currentDir, ".git");
-            if (gitDir.exists() && gitDir.isDirectory()) {
-                return currentDir.getAbsolutePath();
-            }
-            currentDir = currentDir.getParentFile();
-        }
-
-        // 向下查找子目录
-        String foundPath = findGitRepositoryInSubdirectories(startDir);
-        if (foundPath != null) {
-            return foundPath;
-        }
-
-        // 如果都找不到，返回最初的路径
-        return startPath;
-    }
-
-    private static String findGitRepositoryInSubdirectories(File directory) {
-        File[] files = directory.listFiles();
-        if (files == null) {
+        if (workspacePath == null || workspacePath.isEmpty()) {
+            System.out.println("[GitRepositoryUtil] 路径为空，返回null");
             return null;
         }
 
-        // 先检查当前目录下的直接子目录
-        for (File file : files) {
-            if (file.isDirectory()) {
-                File gitDir = new File(file, ".git");
-                if (gitDir.exists() && gitDir.isDirectory()) {
-                    return file.getAbsolutePath();
-                }
-            }
+        File workspaceDir = new File(workspacePath);
+        System.out.println("[GitRepositoryUtil] 工作空间目录存在: " + workspaceDir.exists());
+        System.out.println("[GitRepositoryUtil] 工作空间绝对路径: " + workspaceDir.getAbsolutePath());
+
+        if (!workspaceDir.exists()) {
+            System.out.println("[GitRepositoryUtil] 工作空间目录不存在，返回原路径");
+            return workspacePath;
         }
 
-        // 递归检查子目录的子目录
-        for (File file : files) {
-            if (file.isDirectory()) {
-                String result = findGitRepositoryInSubdirectories(file);
-                if (result != null) {
+        // 1. 检查当前层级
+        System.out.println("[GitRepositoryUtil] --- 检查当前层级 ---");
+        if (isGitRepo(workspaceDir)) {
+            System.out.println("[GitRepositoryUtil] ✓ 当前层级是Git仓库: " + workspacePath);
+            return workspacePath;
+        }
+
+        // 2. 向上查找（从父目录开始）
+        System.out.println("[GitRepositoryUtil] --- 向上查找 ---");
+        File parentDir = workspaceDir.getParentFile();
+        int level = 0;
+        while (parentDir != null && parentDir.exists()) {
+            level++;
+            System.out.println("[GitRepositoryUtil] 第" + level + "层父目录: " + parentDir.getAbsolutePath());
+            if (isGitRepo(parentDir)) {
+                String result = parentDir.getAbsolutePath();
+                System.out.println("[GitRepositoryUtil] ✓ 向上找到Git仓库: " + result);
+                return result;
+            }
+            parentDir = parentDir.getParentFile();
+        }
+
+        // 3. 向下查找（一层直接子目录）
+        System.out.println("[GitRepositoryUtil] --- 向下查找 ---");
+        File[] subDirs = workspaceDir.listFiles(File::isDirectory);
+        if (subDirs != null) {
+            System.out.println("[GitRepositoryUtil] 共有 " + subDirs.length + " 个子目录");
+            for (File subDir : subDirs) {
+                System.out.println("[GitRepositoryUtil] 检查子目录: " + subDir.getName());
+                if (isGitRepo(subDir)) {
+                    String result = subDir.getAbsolutePath();
+                    System.out.println("[GitRepositoryUtil] ✓ 向下找到Git仓库: " + result);
                     return result;
                 }
             }
         }
 
-        return null;
+        System.out.println("[GitRepositoryUtil] ✗ 未找到Git仓库，返回工作空间路径");
+        return workspacePath;
+    }
+
+    /**
+     * 检查目录是否是Git仓库
+     */
+    private static boolean isGitRepo(File dir) {
+        File gitDir = new File(dir, ".git");
+        boolean exists = gitDir.exists();
+        boolean isDir = gitDir.isDirectory();
+        boolean result = exists && isDir;
+        System.out.println("[GitRepositoryUtil]   检查 .git: " + gitDir.getAbsolutePath() + " | 存在=" + exists + " | 是目录=" + isDir);
+        return result;
     }
 
 }
