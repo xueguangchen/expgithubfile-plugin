@@ -307,7 +307,9 @@ public class QuickExportPanel {
             String selected = (String) scopeComboBox.getSelectedItem();
             resetProgressBar();
             if ("自定义选择".equals(selected)) {
-                openSelectCommitDialog();
+                // 先关闭下拉框，再打开对话框，避免下拉框盖住对话框
+                scopeComboBox.hidePopup();
+                SwingUtilities.invokeLater(() -> openSelectCommitDialog());
             } else {
                 quickSelectCommits(selected);
             }
